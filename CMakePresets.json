@@ -1,0 +1,70 @@
+{
+    "version": 8,
+    "cmakeMinimumRequired": {
+      "major": 3,
+      "minor": 28,
+      "patch": 0
+    },
+    "configurePresets": [
+      {
+        "name": "ninja",
+        "generator": "Ninja",
+        "toolchainFile": "extras/Linux.cmake",
+        "cacheVariables": {
+            "CMAKE_BUILD_TYPE": "Debug",
+            "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+            "ENABLE_CCACHE": "ON",
+            "ENABLE_DEBUG_FISSION": "ON"
+        }
+      },
+      {
+        "name": "make",
+        "generator": "Unix Makefiles",
+        "toolchainFile": "extras/Linux.cmake",
+        "cacheVariables": {
+            "CMAKE_BUILD_TYPE": "Debug",
+            "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+            "ENABLE_CCACHE": "ON",
+            "ENABLE_DEBUG_FISSION": "ON"
+        }
+      }
+    ],
+    "buildPresets": [
+      {
+        "name": "ninja",
+        "configurePreset": "ninja"
+      },
+      {
+        "name": "make",
+        "configurePreset": "make"
+      }
+    ],
+    "workflowPresets": [
+      {
+        "name": "ninja",
+        "steps": [
+          {
+            "type": "configure",
+            "name": "ninja"
+          },
+          {
+            "type": "build",
+            "name": "ninja"
+          }
+        ]
+      },
+      {
+        "name": "make",
+        "steps": [
+          {
+            "type": "configure",
+            "name": "make"
+          },
+          {
+            "type": "build",
+            "name": "make"
+          }
+        ]
+      }
+    ]
+  }

@@ -50,14 +50,31 @@ include(CMakeDependentOption)
 include(CheckSymbolExists)
 include(GNUInstallDirs)
 
+option(ENABLE_CCACHE "Enable ccache for mold" OFF)
+if (ENABLE_CCACHE)
+  include(extras/Ccache.cmake)
+endif()
+
 # Build mold itself using mold if -DMOLD_USE_MOLD=ON
 option(MOLD_USE_MOLD "Use mold to build mold" OFF)
 if(MOLD_USE_MOLD)
   add_link_options(-fuse-ld=mold -Wl,--gdb-index)
 endif()
 
+
 add_executable(mold)
 target_compile_features(mold PRIVATE cxx_std_20)
+
+option(ENABLE_DEBUG_FISSION "Enable debug fission for mold" OFF)
+if (ENABLE_DEBUG_FISSION)
+  target_compile_options(
+    ${PROJECT_NAME}
+      PRIVATE
+        -gsplit-dwarf
+  )
+  add_link_options(-Wl,--gdb-index)
+  message(STATUS "Debug Fission enabled")
+endif()
 
 if(MINGW)
   target_link_libraries(mold PRIVATE dl)
@@ -400,13 +417,16 @@ else()
     )
 endif()
 
-# Add frequently included header files for pre-compiling.
-# target_precompile_headers is supported by CMake 3.16.0 or newer.
-if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.16.0")
-  # ccache needs this flag along with `sloppiness = pch_defines,time_macros`
-  # to enable caching
-  if(NOT MSVC)
-    target_compile_options(mold PRIVATE -fpch-preprocess)
+# Ccache is not working with precompiler headers.
+if(NOT ENABLE_CCACHE)
+  # Add frequently included header files for pre-compiling.
+  # target_precompile_headers is supported by CMake 3.16.0 or newer.
+  if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.16.0")
+    # ccache needs this flag along with `sloppiness = pch_defines,time_macros`
+    # to enable caching
+    if(NOT MSVC)
+      target_compile_options(mold PRIVATE -fpch-preprocess)
+    endif()
   endif()
 endif()
 
